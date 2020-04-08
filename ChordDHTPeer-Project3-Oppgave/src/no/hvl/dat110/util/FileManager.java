@@ -83,7 +83,23 @@ public class FileManager {
     	// Task2: assign a replica as the primary for this file. Hint, see the slide (project 3) on Canvas
     	
     	// create replicas of the filename
+    	int index = new Random().nextInt(Util.numReplicas-1);
+    	this.createReplicaFiles();
+    	NodeInterface successor=null;
+    	boolean primary;
     	
+    	for(BigInteger a: replicafiles) {
+    		successor = chordnode.findSuccessor(a);
+    		successor.addKey(a);
+    		if (counter==index){
+    			primary=true;
+    		}else {
+    			primary=false;
+    		}
+    		successor.saveFileContent(filename, a, bytesOfFile, primary);
+    		
+    		counter++;
+    	}
 		// iterate over the replicas
     	
     	// for each replica, find its successor by performing findSuccessor(replica)
@@ -111,7 +127,14 @@ public class FileManager {
 		// Task: Given a filename, find all the peers that hold a copy of this file
 		
 		// generate the N replicas from the filename by calling createReplicaFiles()
-		
+		NodeInterface s;
+		this.createReplicaFiles();
+		for(BigInteger a: this.replicafiles) {
+			s = chordnode.findSuccessor(a);
+			Message m = s.getFilesMetadata(a);
+			succinfo.add(m);
+			
+		}
 		// it means, iterate over the replicas of the file
 		
 		// for each replica, do findSuccessor(replica) that returns successor s.
@@ -132,7 +155,13 @@ public class FileManager {
 	public NodeInterface findPrimaryOfItem() {
 
 		// Task: Given all the active peers of a file (activeNodesforFile()), find which is holding the primary copy
-		
+		NodeInterface primary = null;
+		for(Message a:activeNodesforFile) {
+			if(a.isPrimaryServer()) {
+				primary = Util.getProcessStub(a.getNodeIP(), a.getPort());
+			}
+		}
+		return primary;
 		// iterate over the activeNodesforFile
 		
 		// for each active peer (saved as Message)
@@ -141,7 +170,6 @@ public class FileManager {
 		
 		// return the primary
 		
-		return null; 
 	}
 	
     /**

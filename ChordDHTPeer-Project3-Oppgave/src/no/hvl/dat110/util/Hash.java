@@ -24,7 +24,7 @@ public class Hash {
 		
 		// compute the hash of the input 'entity'
 		try {
-			MessageDigest md= MessageDigest.getInstance("MD5");
+			MessageDigest md = MessageDigest.getInstance("MD5");
 			String entityHex = Hash.toHex(md.digest(entity.getBytes()));
 			hashint=new BigInteger(entityHex, 16);
 		} catch (NoSuchAlgorithmException e) {
@@ -61,14 +61,14 @@ public class Hash {
 	}
 	
 	public static int bitSize() {
-		int digestlen = hashint.bitLength();
-//		try {
-//			MessageDigest md = MessageDigest.getInstance("MD5");
-//			digestlen=	md.getDigestLength();
-//		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		int digestlen = 0;
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			digestlen=	md.getDigestLength();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		
 		// find the digest length
 		

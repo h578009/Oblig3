@@ -28,14 +28,14 @@ public class ChordLookup {
 	
 	public NodeInterface findSuccessor(BigInteger key) throws RemoteException {
 		
+		String name = node.getSuccessor().getNodeName();
+		int port = node.getSuccessor().getPort();
+		NodeInterface successorNode = Util.getProcessStub(name, port);
+		BigInteger id = node.getNodeID().add(BigInteger.ONE);
+		BigInteger successorId = successorNode.getNodeID();
 		
-		NodeInterface stub = node.getSuccessor();
-		NodeInterface successor = Util.getProcessStub(stub.getNodeName(), stub.getPort());
-		BigInteger id = node.getNodeID();
-		BigInteger successorId = successor.getNodeID();
-		
-		if(Util.computeLogic(key, id.add(BigInteger.ONE), successorId)){
-			return successor;
+		if(Util.computeLogic(key, id, successorId)){
+			return successorNode;
 		}else {
 			NodeInterface highest_pred = findHighestPredecessor(key);
 			return highest_pred.findSuccessor(key);
@@ -71,22 +71,22 @@ public class ChordLookup {
 
 		List<NodeInterface> fingerTable = node.getFingerTable();
 		int fingerTableSize= fingerTable.size();
-		NodeInterface finger;
+		NodeInterface finger = node;
 
 		if(fingerTable.isEmpty()) {
-			finger=node;
+			
 		}else{
 			finger=fingerTable.get(fingerTableSize-1);
 			boolean logic=false;
 			int i = fingerTableSize-1;
 			NodeInterface temp=null;
-			
-			
 			BigInteger nodeIdP = node.getNodeID().add(BigInteger.ONE);
 			BigInteger keyM = key.subtract(BigInteger.ONE);
+			
 			while(0<i&&!logic) {
 				temp=Util.getProcessStub(fingerTable.get(i).getNodeName(), fingerTable.get(i).getPort());
-				if(Util.computeLogic(finger.getNodeID(), nodeIdP, keyM)) {
+				
+				if(Util.computeLogic(temp.getNodeID(), nodeIdP, keyM)) {
 					finger=temp;
 					logic=true;
 				}
