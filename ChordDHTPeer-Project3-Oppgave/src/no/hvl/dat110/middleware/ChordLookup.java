@@ -6,6 +6,7 @@ package no.hvl.dat110.middleware;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,22 @@ public class ChordLookup {
 	
 	public NodeInterface findSuccessor(BigInteger key) throws RemoteException {
 		
+		
+		NodeInterface stub = node.getSuccessor();
+		NodeInterface successor = Util.getProcessStub(stub.getNodeName(), stub.getPort());
+		BigInteger id = node.getNodeID();
+		BigInteger successorId = successor.getNodeID();
+		
+		if(Util.computeLogic(key, id.add(BigInteger.ONE), successorId)){
+			return successor;
+		}else {
+			NodeInterface highest_pred = findHighestPredecessor(key);
+			return highest_pred.findSuccessor(key);
+		}
+		
+		
+		
+//		return null;
 		// ask this node to find the successor of key
 		
 		// get the successor of the node
@@ -40,8 +57,7 @@ public class ChordLookup {
 		// if logic returns false; call findHighestPredecessor(key)
 		
 		// do return highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
-				
-		return null;					
+								
 	}
 	
 	/**
@@ -52,6 +68,32 @@ public class ChordLookup {
 	 */
 	private NodeInterface findHighestPredecessor(BigInteger key) throws RemoteException {
 		
+
+		List<NodeInterface> fingerTable = node.getFingerTable();
+		int fingerTableSize= fingerTable.size();
+		NodeInterface finger;
+
+		if(fingerTable.isEmpty()) {
+			finger=node;
+		}else{
+			finger=fingerTable.get(fingerTableSize-1);
+			boolean logic=false;
+			int i = fingerTableSize-1;
+			NodeInterface temp=null;
+			
+			
+			BigInteger nodeIdP = node.getNodeID().add(BigInteger.ONE);
+			BigInteger keyM = key.subtract(BigInteger.ONE);
+			while(0<i&&!logic) {
+				temp=Util.getProcessStub(fingerTable.get(i).getNodeName(), fingerTable.get(i).getPort());
+				if(Util.computeLogic(finger.getNodeID(), nodeIdP, keyM)) {
+					finger=temp;
+					logic=true;
+				}
+				i--;
+			
+			}
+		}
 		// collect the entries in the finger table for this node
 		
 		// starting from the last entry, iterate over the finger table
@@ -62,7 +104,7 @@ public class ChordLookup {
 		
 		// if logic returns true, then return the finger (means finger is the closest to key)
 		
-		return (NodeInterface) node;			
+		return (NodeInterface) finger;			
 	}
 	
 	public void copyKeysFromSuccessor(NodeInterface succ) {
